@@ -1,0 +1,158 @@
+<!-- Section 4: atom:feed element, with:
+     Section 4.1: atom:version attribute and
+     Section 4.2: xml:lang attribute (TODO)
+-->
+<feed version="0.3" xmlns="http://purl.org/atom/ns#"
+  tal:condition="python:here.portal_syndication.isSyndicationAllowed(here)"
+  tal:define="format_date python: lambda d: DateTime(d).HTML4()">
+
+  <!-- Section 4.3: atom:title element -->
+  <title tal:content="here/Title">Feed Title</title>
+
+  <!-- Section 4.4: atom:link element -->
+  <link type="text/html" rel="alternate"
+    tal:attributes="href here/absolute_url" />
+
+  <!-- Section 4.5: atom:author element, Person construct -->
+  <author
+    tal:condition="here/Creator"
+    tal:define="member python:here.getMemberInfo(here.Creator());
+    fullname python: member and member.getProperty('fullname') or here.Creator();
+    email python: member and member.getProperty('email') or None;
+    url python: here.portal_membership.getHomeUrl(here.Creator())">
+
+    <!-- Section 3.2.1: name element -->
+    <name tal:content="fullname" tal:condition="fullname">
+      username
+    </name>
+
+    <!-- Section 3.2.2: url element -->
+    <url tal:content="url" tal:condition="url">
+      http://foo.bar/baz
+    </url>
+
+    <!-- Section 3.3.3: email element -->
+    <email tal:content="email" tal:condition="email">
+      email
+    </email>
+  </author>
+
+  <!-- Section 4.6: atom:contributor element (TODO) -->
+
+  <!-- Section 4.7: atom:tagline element, Content construct-->
+  <tagline tal:condition="here/Description"
+    tal:content="here/Description">
+    Feed description
+  </tagline>
+
+  <!-- Section 4.8: atom:id element (TODO) -->
+
+  <!-- Section 4.9: atom:generator element -->
+  <generator url="http://woss.name/Software/PloneAtom" version="0.1.0">
+    Plone Atom feed support, by Graeme Mathieson &lt;mathie@woss.name&gt;
+  </generator>
+
+  <!-- Section 4.10: atom:copyright element (TODO) -->
+
+  <!-- Section 4.11: atom:info element - a description of the feed
+       format. Ignore. -->
+
+  <!-- Section 4.12: atom:modified.  FIXME: This should probably be the
+       modified time of the most recently modified item in the feed,
+       really. -->
+  <modified
+    tal:content="python: format_date(here.ModificationDate())">
+    2003-12-13T18:30:02Z
+  </modified>
+
+  <!-- Section 4.13: atom:entry element -->
+  <entry
+    tal:repeat="entry python:here.portal_syndication.getSyndicatableContent(here)[:int(here.portal_syndication.getMaxItems(here))]">
+
+    <!-- Section 4.13.1: atom:title element -->
+    <title tal:content="entry/Title">Entry title</title>
+
+    <!-- Section 4.13.2: atom:link element -->
+    <link rel="alternate" type="text/html" href="#"
+      tal:attributes="href entry/absolute_url" />
+
+    <!-- Section 4.13.3: atom:author element, Person construct -->
+    <author
+      tal:condition="python: entry.Creator() != here.Creator()"
+      tal:define="member python:here.getMemberInfo(entry.Creator());
+      fullname python: member and member.getProperty('fullname') or entry.Creator();
+      email python: member and member.getProperty('email') or None;
+      url python: here.portal_membership.getHomeUrl(here.Creator())">
+
+      <!-- Section 3.2.1: name element -->
+      <name tal:content="fullname" tal:condition="fullname">
+        username
+      </name>
+
+      <!-- Section 3.2.2: url element -->
+      <url tal:content="url" tal:condition="url">
+        http://foo.bar/baz
+      </url>
+
+      <!-- Section 3.3.3: email element -->
+      <email tal:content="email" tal:condition="email">
+        email
+      </email>
+    </author>
+
+    <!-- Section 4.13.4: atom:contributor element, Person construct -->
+    <contributor tal:condition="entry/Contributors"
+      tal:repeat="contributor entry/Contributors">
+      <tal:block tal:define="member python:here.getMemberInfo(contributor);
+      fullname python: member and member.getProperty('fullname') or contributor;
+      email python: member and member.getProperty('email') or None;
+      url python: here.portal_membership.getHomeUrl(contributor)">
+
+        <!-- Section 3.2.1: name element -->
+        <name tal:content="fullname" tal:condition="fullname">
+          username
+        </name>
+
+        <!-- Section 3.2.2: url element -->
+        <url tal:content="url" tal:condition="url">
+          http://foo.bar/baz
+        </url>
+
+        <!-- Section 3.3.3: email element -->
+        <email tal:content="email" tal:condition="email">
+          email
+        </email>
+      </tal:block>
+    </contributor>
+
+    <!-- Section 4.13.5: atom:id element -->
+    <id tal:content="entry/Identifier">unique_id</id>
+
+    <!-- Section 4.13.6: atom:modified element -->
+    <modified tal:condition="entry/ModificationDate"
+      tal:content="python: format_date(entry.ModificationDate())">
+      2003-12-13T18:30:02Z
+    </modified>
+
+    <!-- Section 4.13.7: atom:issued element -->
+    <issued tal:content="python: format_date(entry.EffectiveDate() is not 'None' and entry.EffectiveDate() or entry.CreationDate())">
+      2003-12-13T18:30:02Z
+    </issued>
+
+    <!-- Section 4.13.8: atom:created element -->
+    <created tal:condition="entry/CreationDate"
+      tal:content="python: format_date(entry.CreationDate())">
+      2003-12-13T18:30:02Z
+    </created>
+
+    <!-- Section 4.13.9: atom:summary element, Content construct -->
+    <summary tal:content="entry/Description"
+      tal:condition="entry/Description">
+      Summary
+    </summary>
+
+    <!-- Section 4.13.10: atom:content element, Content construct (TODO)
+    -->
+
+  </entry>
+</feed>
